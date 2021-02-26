@@ -152,9 +152,13 @@ class Router:
     table_packet = packet
     table_packet[SRCE] = packet[DEST]
     table_packet[DEST] = packet[SRCE]
-    table_packet[MESG] = json.loads("{}")
+    table_packet[TYPE] = "table"
+    table_packet[MESG] = json.loads("[]")
     for entry in self.routes:
       table_packet[MESG].append(json.loads("{\"network\" : \"" + entry + "\", \"netmask\" : \"" + self.updates[entry][MESG][NMSK] + "\", \"peer\" : \"" + self.routes[entry] + "\"}"))
+    print("Table packet:")
+    print(json.dumps(table_packet))
+    print("\n\n\n")
     self.sockets[packet[SRCE]].sendall(json.dumps(table_packet).encode())
     return True
 
@@ -169,7 +173,7 @@ class Router:
     elif packet[TYPE] == NRTE:
       return False
     elif packet[TYPE] == DUMP:
-      return False
+      return self.dump(packet)
     return False
 
   def send_error(self, conn, msg):
