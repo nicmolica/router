@@ -111,8 +111,11 @@ class Router:
 
   def forward(self, srcif, packet):
     """ Forward a data packet """
-    self.sockets[self.routes[packet[DEST]]].sendall(json.dumps(packet).encode())
-    return False
+    try:
+      self.sockets[self.routes[packet[DEST]]].sendall(json.dumps(packet).encode())
+    except:
+      return False
+    return True
 
   def coalesce(self):
     """ coalesce any routes that are right next to each other """
@@ -127,22 +130,17 @@ class Router:
     # store the packet in case we need it later
     self.updates[packet[MESG][NTWK]] = packet
     # create a modified copy of the packet to update neighbors
-    print("Original packet:")
-    print(packet)
-    print("\n\n\n")
     update_packet = packet
     update_packet[SRCE] = packet[DEST]
     update_packet[MESG][APTH].append(int(self.asn))
     # update all the neighbors
     for neighbor in self.sockets.keys():
-      update_packet[DEST] = neighbor
-      print("Updated packet:")
-      print(update_packet)
-      print("\n\n\n")
-      self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
+      if neighbor != srcif:
+        update_packet[DEST] = neighbor
+        self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
 
     # TODO change this so that only the necessary neighbors are updated
-    return False
+    return True
 
   def revoke(self, packet):
     """ handle revoke packets """
