@@ -45,7 +45,7 @@ class Router:
     self.updates = {}
     self.relations = {}
     self.sockets = {}
-    self.asn = asn
+    self.asn = asn[0]
     for relationship in networks:
       network, relation = relationship.split("-")
       self.sockets[network] = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
@@ -111,7 +111,7 @@ class Router:
 
   def forward(self, srcif, packet):
     """ Forward a data packet """
-    self.sockets[self.routes[packet[DEST]]].sendall(packet)
+    self.sockets[self.routes[packet[DEST]]].sendall(json.dumps(packet).encode())
     return False
 
   def coalesce(self):
@@ -127,13 +127,19 @@ class Router:
     # store the packet in case we need it later
     self.updates[packet[MESG][NTWK]] = packet
     # create a modified copy of the packet to update neighbors
+    print("Original packet:")
+    print(packet)
+    print("\n\n\n")
     update_packet = packet
     update_packet[SRCE] = packet[DEST]
     update_packet[MESG][APTH].append(int(self.asn))
     # update all the neighbors
     for neighbor in self.sockets.keys():
       update_packet[DEST] = neighbor
-      self.sockets[neighbor].sendall(update_packet)
+      print("Updated packet:")
+      print(update_packet)
+      print("\n\n\n")
+      self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
 
     # TODO change this so that only the necessary neighbors are updated
     return False
