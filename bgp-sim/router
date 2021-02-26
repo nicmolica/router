@@ -113,6 +113,7 @@ class Router:
     """ Forward a data packet """
     try:
       self.sockets[self.routes[packet[DEST]]].sendall(json.dumps(packet).encode())
+      print("Successfully forwarded data to " + self.routes[packet[DEST]] + "!\n\n")
     except:
       return False
     return True
@@ -138,6 +139,7 @@ class Router:
       if neighbor != srcif:
         update_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
+        print("Successfully sent update to " + neighbor + "!\n\n")
 
     # TODO change this so that only the necessary neighbors are updated
     return True
@@ -158,21 +160,25 @@ class Router:
       table_packet[MESG].append(json.loads("{\"network\" : \"" + entry + "\", \"netmask\" : \"" + self.updates[entry][MESG][NMSK] + "\", \"peer\" : \"" + self.routes[entry] + "\"}"))
     print("Table packet:")
     print(json.dumps(table_packet))
-    print("\n\n\n")
+    print("\n\n")
     self.sockets[packet[SRCE]].sendall(json.dumps(table_packet).encode())
+    print("Successfully dumped table!")
     return True
 
   def handle_packet(self, srcif, packet):
     """ dispatches a packet """
     if packet[TYPE] == UPDT:
+      print("Requested update to routing table...\n")
       return self.update(srcif, packet)
     elif packet[TYPE] == RVKE:
       return False
     elif packet[TYPE] == DATA:
+      print("Requested data forward to " + packet[DEST] + "...\n")
       return self.forward(srcif, packet)
     elif packet[TYPE] == NRTE:
       return False
     elif packet[TYPE] == DUMP:
+      print("Requested dump of routing table...\n")
       return self.dump(packet)
     return False
 
