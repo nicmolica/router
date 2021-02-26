@@ -175,6 +175,8 @@ class Router:
 
 if __name__ == "__main__":
   PARSER = argparse.ArgumentParser(description='route packets')
+  PARSER.add_argument('asn', metavar='asn', type=int, nargs=1, help='asn')
   PARSER.add_argument('networks', metavar='networks', type=str, nargs='+', help="networks")
   ARGS = PARSER.parse_args()
+  print(ARGS)
   Router(ARGS.networks).run()
