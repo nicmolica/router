@@ -149,7 +149,13 @@ class Router:
 
   def dump(self, packet):
     """ handles dump table requests """
-    # TODO
+    table_packet = packet
+    table_packet[SRCE] = packet[DEST]
+    table_packet[DEST] = packet[SRCE]
+    table_packet[MESG] = json.loads("{}")
+    for entry in self.routes:
+      table_packet[MESG].append(json.loads("{\"network\" : \"" + entry + "\", \"netmask\" : \"" + self.updates[entry][MESG][NMSK] + "\", \"peer\" : \"" + self.routes[entry] + "\"}"))
+    self.sockets[packet[SRCE]].sendall(json.dumps(table_packet).encode())
     return True
 
   def handle_packet(self, srcif, packet):
