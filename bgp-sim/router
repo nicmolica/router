@@ -68,7 +68,8 @@ class Router:
         if netmask[i] == "255" and addr[i] != split_out[i]:
           print("Dropping " + out + " from list")
           outroutes.pop(out)
-          print("Dropped " + out + " from list")
+          print("Dropped " + out + " from list. Remaining list: ")
+          print(outroutes)
     print("Valid routes:")
     print(outroutes)
     print("\n\n")
