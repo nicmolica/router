@@ -57,7 +57,18 @@ class Router:
   def lookup_routes(self, daddr):
     """ Lookup all valid routes for an address """
     # TODO
-    outroutes = []
+    print("Looking up correct route...")
+    outroutes = self.routes
+    addr = daddr.split(".")
+    for out in outroutes:
+      netmask = self.updates[out][MESG][NMSK].split(".")
+      split_out = out.split(".")
+      for i in range(0, 4):
+        if netmask[i] == "255" and addr[i] != split_out[i]:
+          outroutes.pop(out)
+    print("Valid routes:")
+    print(outroutes)
+    print("\n\n")
     return outroutes
 
   def get_shortest_as_path(self, routes):
@@ -94,6 +105,7 @@ class Router:
     # TODO
     peer = None
     routes = self.lookup_routes(daddr)
+    return self.sockets[routes[0]]
     # Rules go here
     if routes:
       # 1. Highest Preference
