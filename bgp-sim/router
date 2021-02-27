@@ -57,7 +57,8 @@ class Router:
   def lookup_routes(self, daddr):
     """ Lookup all valid routes for an address """
     # TODO
-    print("Looking up correct route...")
+    print("Looking up correct route...\nInitial list:")
+    print(outroutes)
     outroutes = self.routes
     addr = daddr.split(".")
     for out in self.routes:
