@@ -211,9 +211,9 @@ class Router:
 
   def get_local_version(self, neighbor):
     """ get local IP associated with provided neighbor IP """
-    local = neighbor
+    local = list(neighbor)
     local[len(local) - 1] = "1"
-    return local
+    return "".join(local)
 
 if __name__ == "__main__":
   PARSER = argparse.ArgumentParser(description='route packets')
