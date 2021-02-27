@@ -146,6 +146,7 @@ class Router:
     # add entry to routing table
     # TODO change this so that it is only added if it is better than what was there before
     self.routes[packet[MESG][NTWK]] = srcif
+    print("Added entry to forward " + packet[MESG][NTWK] + " to " + srcif)
     # store the packet in case we need it later
     self.updates[packet[MESG][NTWK]] = packet
     # create a modified copy of the packet to update neighbors
@@ -155,6 +156,7 @@ class Router:
     # update all the neighbors
     for neighbor in self.sockets.keys():
       if neighbor != srcif:
+        print("Sending update to " + neighbor)
         update_packet[SRCE] = self.ip.get_local_version(neighbor)
         update_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
