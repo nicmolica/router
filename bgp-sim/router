@@ -137,10 +137,10 @@ class Router:
 
   def forward(self, srcif, packet):
     """ Forward a data packet """
-    self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
+    
     try:
-      #self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
-      print("Successfully forwarded data to " + self.routes[packet[DEST]] + "!\n\n")
+      self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
+      print("Successfully forwarded data!\n\n")
     except:
       print("Failed to forward data to " + packet[DEST])
       return False
