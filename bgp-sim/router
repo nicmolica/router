@@ -142,6 +142,7 @@ class Router:
       self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
       print("Successfully forwarded data to " + self.routes[packet[DEST]] + "!\n\n")
     except:
+      print("Failed to forward data to " + packet[DEST])
       return False
     return True
 
