@@ -71,10 +71,13 @@ class Router:
           outroutes.pop(out)
           print("Dropped " + out + " from list. Remaining list: ")
           print(outroutes)
+        else:
+          winner = out # stupid fix - remove later
     print("Valid routes:")
     print(outroutes)
     print("\n\n")
-    return outroutes
+    # return outroutes ::: should be doing this!
+    return outroutes[winner] # temporary fix for milestone
 
   def get_shortest_as_path(self, routes):
     """ select the route with the shortest AS Path """
@@ -110,7 +113,7 @@ class Router:
     # TODO
     peer = None
     routes = self.lookup_routes(daddr)
-    return self.sockets[routes[0]]
+    return self.sockets[routes] # remove this line and do something less stupid
     # Rules go here
     if routes:
       # 1. Highest Preference
