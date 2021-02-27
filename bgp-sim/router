@@ -127,6 +127,10 @@ class Router:
       routes = self.get_origin_routes(routes)
       # 5. Lowest IP Address
       # TODO
+      last = "255.255.255.255"
+      for route in routes:
+        peer = self.ip.least(last, route)
+        last = route
       # Final check: enforce peering relationships
       routes = self.filter_relationships(srcif, routes)
     return self.sockets[peer] if peer else None
@@ -243,6 +247,7 @@ class IPUtils:
     return "".join(local)
 
   def subnet_to_cidr(self, subnet):
+    """ convert subnet mask to cidr """
     nums = subnet.split(".")
     bins = [bin(nums[0]), bin(nums[1]), bin(nums[2]), bin(nums[3])]
     cidr = 0
@@ -252,6 +257,18 @@ class IPUtils:
         if binary[i] == "1":
           cidr = cidr + 1
     return cidr
+
+  def least(self, this, that):
+    """ return the lower of two IP addresses """
+    split_this = this.split(".")
+    split_that = that.split(".")
+    for i in range(0, 4):
+      for j in range(0, 4):
+        if int(split_this[i]) > int(split_that[j]):
+          return that
+        else:
+          return this
+    return this
 
 if __name__ == "__main__":
   PARSER = argparse.ArgumentParser(description='route packets')
