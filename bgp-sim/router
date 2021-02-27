@@ -46,6 +46,7 @@ class Router:
     self.relations = {}
     self.sockets = {}
     self.asn = asn[0]
+    self.ip = IPUtils()
     for relationship in networks:
       network, relation = relationship.split("-")
       self.sockets[network] = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
@@ -112,7 +113,7 @@ class Router:
   def forward(self, srcif, packet):
     """ Forward a data packet """
     try:
-      self.sockets[self.routes[packet[DEST]]].sendall(json.dumps(packet).encode())
+      self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
       print("Successfully forwarded data to " + self.routes[packet[DEST]] + "!\n\n")
     except:
       return False
@@ -137,10 +138,9 @@ class Router:
     # update all the neighbors
     for neighbor in self.sockets.keys():
       if neighbor != srcif:
-        update_packet[SRCE] = self.get_local_version(neighbor)
+        update_packet[SRCE] = self.ip.get_local_version(neighbor)
         update_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
-        print("Successfully sent update to " + neighbor + "!\n\n")
 
     # TODO change this so that only the necessary neighbors are updated
     return True
@@ -158,7 +158,8 @@ class Router:
     table_packet[TYPE] = "table"
     table_packet[MESG] = json.loads("[]")
     for entry in self.routes:
-      table_packet[MESG].append(json.loads("{\"network\" : \"" + entry + "\", \"netmask\" : \"" + self.updates[entry][MESG][NMSK] + "\", \"peer\" : \"" + self.routes[entry] + "\"}"))
+      table_packet[MESG].append(json.loads("{\"network\" : \"" + entry + "\", \"netmask\" : \"" + \
+        self.updates[entry][MESG][NMSK] + "\", \"peer\" : \"" + self.routes[entry] + "\"}"))
     print("Table packet:")
     print(json.dumps(table_packet))
     print("\n\n")
@@ -209,11 +210,23 @@ class Router:
         else:
           return
 
+class IPUtils:
   def get_local_version(self, neighbor):
     """ get local IP associated with provided neighbor IP """
     local = list(neighbor)
     local[len(local) - 1] = "1"
     return "".join(local)
+
+  def subnet_to_cidr(self, subnet):
+    nums = subnet.split(".")
+    bins = [bin(nums[0]), bin(nums[1]), bin(nums[2]), bin(nums[3])]
+    cidr = 0
+    for num in bins:
+      binary = list(num)
+      for i in range(2, len(binary)):
+        if binary[i] == "1":
+          cidr = cidr + 1
+    return cidr
 
 if __name__ == "__main__":
   PARSER = argparse.ArgumentParser(description='route packets')
