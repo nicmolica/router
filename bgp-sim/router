@@ -143,7 +143,7 @@ class Router:
 
   def update(self, srcif, packet):
     """ handle update packets """
-    print("Update packet:\n" + packet)
+    print("Update packet:\n" + str(packet))
     # add entry to routing table
     # TODO change this so that it is only added if it is better than what was there before
     self.routes[packet[MESG][NTWK]] = srcif
