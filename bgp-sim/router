@@ -60,7 +60,7 @@ class Router:
     print("Looking up correct route...")
     outroutes = self.routes
     addr = daddr.split(".")
-    for out in outroutes:
+    for out in self.routes:
       print("Checking " + out + " against " + daddr)
       netmask = self.updates[out][MESG][NMSK].split(".")
       split_out = out.split(".")
