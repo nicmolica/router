@@ -182,7 +182,7 @@ class Router:
 
   def dump(self, packet):
     """ handles dump table requests """
-    table_packet = packet
+    table_packet = packet.copy()
     table_packet[SRCE] = packet[DEST]
     table_packet[DEST] = packet[SRCE]
     table_packet[TYPE] = "table"
