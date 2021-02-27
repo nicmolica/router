@@ -58,22 +58,14 @@ class Router:
     """ Lookup all valid routes for an address """
     # TODO
     outroutes = self.routes.copy()
-    print("Looking up correct route...\nInitial list:")
-    print(outroutes)
     addr = daddr.split(".")
     for out in self.routes:
-      print("Checking " + out + " against " + daddr)
       netmask = self.updates[out][MESG][NMSK].split(".")
       split_out = out.split(".")
       for i in range(0, 4):
         if netmask[i] == "255" and addr[i] != split_out[i]:
-          print("Dropping " + out + " from list")
           outroutes.pop(out)
           break
-          print("Dropped " + out + " from list. Remaining list: ")
-          print(outroutes)
-    print("Valid routes:")
-    print(outroutes)
     return outroutes
 
   def get_shortest_as_path(self, routes):
@@ -133,17 +125,13 @@ class Router:
         last = route
       # Final check: enforce peering relationships
       routes = self.filter_relationships(srcif, routes)
-      print("Chosen route: " + self.routes[peer])
     return self.sockets[self.routes[peer]] if peer else None
 
   def forward(self, srcif, packet):
     """ Forward a data packet """
-    
     try:
       self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
-      print("Successfully forwarded data!\n\n")
     except:
-      print("Failed to forward data to " + packet[DEST])
       return False
     return True
 
@@ -154,11 +142,9 @@ class Router:
 
   def update(self, srcif, packet):
     """ handle update packets """
-    print("Update packet:\n" + str(packet))
     # add entry to routing table
     # TODO change this so that it is only added if it is better than what was there before
     self.routes[packet[MESG][NTWK]] = srcif
-    print("Added entry to forward " + packet[MESG][NTWK] + " to " + srcif)
     # store the packet in case we need it later
     self.updates[packet[MESG][NTWK]] = packet
     # create a modified copy of the packet to update neighbors
@@ -168,7 +154,6 @@ class Router:
     # update all the neighbors
     for neighbor in self.sockets.keys():
       if neighbor != srcif:
-        print("Sending update to " + neighbor)
         update_packet[SRCE] = self.ip.get_local_version(neighbor)
         update_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
@@ -191,27 +176,20 @@ class Router:
     for entry in self.routes:
       table_packet[MESG].append(json.loads("{\"network\" : \"" + entry + "\", \"netmask\" : \"" + \
         self.updates[entry][MESG][NMSK] + "\", \"peer\" : \"" + self.routes[entry] + "\"}"))
-    print("Table packet:")
-    print(json.dumps(table_packet))
-    print("\n\n")
     self.sockets[packet[SRCE]].sendall(json.dumps(table_packet).encode())
-    print("Successfully dumped table!")
     return True
 
   def handle_packet(self, srcif, packet):
     """ dispatches a packet """
     if packet[TYPE] == UPDT:
-      print("Requested update to routing table...")
       return self.update(srcif, packet)
     elif packet[TYPE] == RVKE:
       return False
     elif packet[TYPE] == DATA:
-      print("Requested data forward to " + packet[DEST] + "...")
       return self.forward(srcif, packet)
     elif packet[TYPE] == NRTE:
       return False
     elif packet[TYPE] == DUMP:
-      print("Requested dump of routing table...")
       return self.dump(packet)
     return False
 
