@@ -56,12 +56,13 @@ class Router:
 
   def lookup_routes(self, daddr):
     """ Lookup all valid routes for an address """
-    # TODO
     outroutes = self.routes.copy()
     addr = daddr.split(".")
+    # loop through each route in the table, dropping any that don't lead to daddr
     for out in self.routes:
       netmask = self.updates[out][MESG][NMSK].split(".")
       split_out = out.split(".")
+      # loop through each number in the IP, drop the IP if it leads somewhere other than daddr
       for i in range(0, 4):
         if netmask[i] == "255" and addr[i] != split_out[i]:
           outroutes.pop(out)
@@ -118,7 +119,6 @@ class Router:
       # 4. EGP > IGP > UNK
       routes = self.get_origin_routes(routes)
       # 5. Lowest IP Address
-      # TODO
       last = "255.255.255.255"
       for route in routes:
         peer = self.ip.least(last, route)
@@ -148,7 +148,7 @@ class Router:
     # store the packet in case we need it later
     self.updates[packet[MESG][NTWK]] = packet
     # create a modified copy of the packet to update neighbors
-    update_packet = packet
+    update_packet = packet.copy()
     # update_packet[SRCE] = packet[DEST] WRONG
     update_packet[MESG][APTH].append(int(self.asn))
     # update all the neighbors
@@ -157,7 +157,6 @@ class Router:
         update_packet[SRCE] = self.ip.get_local_version(neighbor)
         update_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
-
     # TODO change this so that only the necessary neighbors are updated
     return True
 
@@ -168,11 +167,13 @@ class Router:
 
   def dump(self, packet):
     """ handles dump table requests """
+    # copy the packet and modify its fields to make it a table packet
     table_packet = packet.copy()
     table_packet[SRCE] = packet[DEST]
     table_packet[DEST] = packet[SRCE]
     table_packet[TYPE] = "table"
     table_packet[MESG] = json.loads("[]")
+    # for each route, add an entry to the msg field of the table packet
     for entry in self.routes:
       table_packet[MESG].append(json.loads("{\"network\" : \"" + entry + "\", \"netmask\" : \"" + \
         self.updates[entry][MESG][NMSK] + "\", \"peer\" : \"" + self.routes[entry] + "\"}"))
@@ -236,6 +237,7 @@ class IPUtils:
       for i in range(2, len(binary)):
         if binary[i] == "1":
           cidr = cidr + 1
+    # TODO delete this method if it's not useful
     return cidr
 
   def least(self, this, that):
