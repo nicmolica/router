@@ -132,11 +132,12 @@ class Router:
     self.updates[packet[MESG][NTWK]] = packet
     # create a modified copy of the packet to update neighbors
     update_packet = packet
-    update_packet[SRCE] = packet[DEST]
+    # update_packet[SRCE] = packet[DEST] WRONG
     update_packet[MESG][APTH].append(int(self.asn))
     # update all the neighbors
     for neighbor in self.sockets.keys():
       if neighbor != srcif:
+        update_packet[SRCE] = self.get_local_version(neighbor)
         update_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
         print("Successfully sent update to " + neighbor + "!\n\n")
@@ -207,6 +208,12 @@ class Router:
             self.send_error(conn, msg)
         else:
           return
+
+  def get_local_version(self, neighbor):
+    """ get local IP associated with provided neighbor IP """
+    local = neighbor
+    local[len(local) - 1] = "1"
+    return local
 
 if __name__ == "__main__":
   PARSER = argparse.ArgumentParser(description='route packets')
