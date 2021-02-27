@@ -73,7 +73,6 @@ class Router:
           print(outroutes)
     print("Valid routes:")
     print(outroutes)
-    print("\n\n")
     return outroutes
 
   def get_shortest_as_path(self, routes):
@@ -138,9 +137,9 @@ class Router:
 
   def forward(self, srcif, packet):
     """ Forward a data packet """
-    self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
+    #self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
     try:
-      #self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
+      self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
       print("Successfully forwarded data to " + self.routes[packet[DEST]] + "!\n\n")
     except:
       return False
@@ -200,23 +199,23 @@ class Router:
   def handle_packet(self, srcif, packet):
     """ dispatches a packet """
     if packet[TYPE] == UPDT:
-      print("Requested update to routing table...\n")
+      print("Requested update to routing table...")
       return self.update(srcif, packet)
     elif packet[TYPE] == RVKE:
       return False
     elif packet[TYPE] == DATA:
-      print("Requested data forward to " + packet[DEST] + "...\n")
+      print("Requested data forward to " + packet[DEST] + "...")
       return self.forward(srcif, packet)
     elif packet[TYPE] == NRTE:
       return False
     elif packet[TYPE] == DUMP:
-      print("Requested dump of routing table...\n")
+      print("Requested dump of routing table...")
       return self.dump(packet)
     return False
 
   def send_error(self, conn, msg):
     """ Send a no_route error message """
-    print("ERROR!!!")
+    print("ERROR!!!\n\n")
     # TODO
     return
 
