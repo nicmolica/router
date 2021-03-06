@@ -166,23 +166,14 @@ class Router:
     # TODO change this so that it is only added if it is better than what was there before
     print("Update: traffic to " + packet[MESG][NTWK] + " should be forwarded to " + srcif + "\nINFO:")
     print("Netmask: " + packet[MESG][NMSK] + "\nLocalpref: " + str(packet[MESG][LPRF]) + "\nSelforigin: " + str(packet[MESG][SORG]) + \
-      "\nASPath: " + str(packet[MESG][APTH]) + "\nOrigin: " + packet[MESG][ORIG] + "\n\n")
-    # determine if a previous path to this network exists, and if so, which is better
-    # previous_path_exists = packet[MESG][NTWK] in self.routes.keys()
-    # new_path_is_better = True
-    # if previous_path_exists:
-    #   print("Previous path exists. It is inferior, so updating to new path. New path:")
-    #   prev_path = self.routes[packet[MESG][NTWK]].copy()
-    #   better_localpref = packet[MESG][LPRF] > prev_path[LPRF]
-    #   better_selforigin = packet[MESG][SORG] and not prev_path[SORG]
-    #   better_aspath = len(packet[MESG][APTH]) < len(prev_path[APTH])
-    #   better_origin = (packet[MESG][ORIG] == "EGP" and not prev_path[ORIG] == "EGP") or \
-    #     (packet[MESG][ORIG] == "IGP" and not prev_path[ORIG] == "EGP" and not prev_path[ORIG] == "IGP")
-    #   new_path_is_better = better_localpref or better_selforigin or better_aspath or better_origin
+      "\nASPath: " + str(packet[MESG][APTH]) + "\nOrigin: " + packet[MESG][ORIG])
     
-    #if new_path_is_better:
+    print("Old routing table:")
+    print(self.routes)
     self.routes.append({DEST: packet[MESG][NTWK], NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
       SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]})
+    print("New routing table:")
+    print(self.routes)
     # store the packet in case we need it later
     self.updates.append(packet.copy())
     # create a modified copy of the packet to update neighbors
