@@ -181,7 +181,7 @@ class Router:
     # for each route, add an entry to the msg field of the table packet
     for entry in self.routes:
       table_packet[MESG].append(json.loads("{\"network\" : \"" + entry + "\", \"netmask\" : \"" + \
-        self.updates[entry][MESG][NMSK] + "\", \"peer\" : \"" + self.routes[entry][NEXT] + "\"}"))
+        self.routes[entry][NMSK] + "\", \"peer\" : \"" + self.routes[entry][NEXT] + "\"}"))
     self.sockets[packet[SRCE]].sendall(json.dumps(table_packet).encode())
     return True
 
