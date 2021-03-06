@@ -86,9 +86,9 @@ class Router:
 
   def get_self_origin(self, routes):
     """ select self originating routes """
-    self_origin = True in list(map((lambda x: routes[x][SORG]), routes))
+    self_origin = True in map((lambda x: routes[x][SORG]), routes)
     if self_origin:
-      outroutes = filter((lambda x: routes[x][SORG] == True), routes.copy())
+      outroutes = list(filter((lambda x: routes[x][SORG] == True), routes.copy()))
     else:
       outroutes = routes.copy()
     return outroutes
