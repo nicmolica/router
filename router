@@ -255,7 +255,10 @@ class Router:
           return
 
   def get_dict(self, routes, ip, key):
-    return dict(filter((lambda x: x[key] == ip), routes.copy().items()))
+    for route in routes:
+      if route[key] == ip:
+        return route
+    return None
 
   def get_keys(self):
     return list(map((lambda x: x[DEST]), self.routes.copy()))
