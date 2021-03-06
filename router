@@ -29,15 +29,12 @@ ORIG = "origin"
 LPRF = "localpref"
 APTH = "ASPath"
 SORG = "selfOrigin"
+NEXT = "next"
 
 # internal route info
 CUST = "cust"
 PEER = "peer"
 PROV = "prov"
-
-# routing table fields
-NEXT = "next"
-MASK = "mask"
 
 
 ##########################################################################################
@@ -81,11 +78,10 @@ class Router:
     return routes
 
   def get_highest_preference(self, routes):
-    """ select the route with the shortest AS Path """
-    # TODO
-    # outroutes = []
-    # return outroutes
-    return routes
+    """ select the route(s) with the highest preference """
+    outroutes = routes.copy()
+    max_pref = max(map((lambda x: x[LPRF]), outroutes))
+    return filter((lambda x: x[LPRF] == max_pref), outroutes)
 
   def get_self_origin(self, routes):
     """ select self originating routes """
@@ -148,7 +144,7 @@ class Router:
     """ handle update packets """
     # add entry to routing table
     # TODO change this so that it is only added if it is better than what was there before
-    self.routes[packet[MESG][NTWK]] = {NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: packet[MESG][LPRF], \
+    self.routes[packet[MESG][NTWK]] = {NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
       SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]}
     # store the packet in case we need it later
     self.updates[packet[MESG][NTWK]] = packet
