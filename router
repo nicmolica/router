@@ -142,6 +142,7 @@ class Router:
 
   def forward(self, srcif, packet):
     """ Forward a data packet """
+    print("Forwarding packet from " + str(srcif) + " to " + str(packet[DEST]))
     self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
     # TODO put this back in the try-except
     try:
