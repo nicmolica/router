@@ -167,7 +167,7 @@ class Router:
     previous_path_exists = packet[MESG][NTWK] in self.routes.keys()
     new_path_is_better = True
     if previous_path_exists:
-      print("Previous path exists. It is inferior, so updating to new path.")
+      print("Previous path exists. It is inferior, so updating to new path. New path:")
       prev_path = self.routes[packet[MESG][NTWK]].copy()
       better_localpref = packet[MESG][LPRF] > prev_path[LPRF]
       better_selforigin = packet[MESG][SORG] and not prev_path[SORG]
@@ -179,6 +179,7 @@ class Router:
     if new_path_is_better:
       self.routes[packet[MESG][NTWK]] = {NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
         SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]}
+      print(self.routes[packet[MESG][NTWK]])
       # store the packet in case we need it later
       self.updates[packet[MESG][NTWK]] = packet.copy()
       # create a modified copy of the packet to update neighbors
