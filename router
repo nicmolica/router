@@ -177,7 +177,7 @@ class Router:
     #   new_path_is_better = better_localpref or better_selforigin or better_aspath or better_origin
     
     #if new_path_is_better:
-    self.routes.append({"dest": packet[MESG][NTWK], NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
+    self.routes.append({DEST: packet[MESG][NTWK], NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
       SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]})
     # store the packet in case we need it later
     self.updates.append(packet.copy())
