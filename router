@@ -161,7 +161,7 @@ class Router:
     # add entry to routing table
     # TODO change this so that it is only added if it is better than what was there before
     print("Update: traffic to " + packet[MESG][NTWK] + " should be forwarded to " + srcif + "\nINFO:")
-    print("Netmask: " + packet[MESG][NMSK] + "\nLocalpref: " + str(packet[MESG][LPRF]) + "\nSelforigin: " + packet[MESG][SORG] + \
+    print("Netmask: " + packet[MESG][NMSK] + "\nLocalpref: " + str(packet[MESG][LPRF]) + "\nSelforigin: " + str(packet[MESG][SORG]) + \
       "\nASPath: " + str(packet[MESG][APTH]) + "\nOrigin: " + packet[MESG][ORIG] + "\n\n")
     self.routes[packet[MESG][NTWK]] = {NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
       SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]}
