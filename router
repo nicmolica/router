@@ -121,30 +121,16 @@ class Router:
     # TODO
     peer = None
     routes = self.lookup_routes(daddr)
-    print("Options to choose from:")
-    print(routes)
     # Rules go here
     if routes:
       # 1. Highest Preference
       routes = self.get_highest_preference(routes)
-      print("Narrowed down:")
-      print(routes)
-      print("\n")
       # 2. Self Origin
       routes = self.get_self_origin(routes)
-      print("Narrowed down:")
-      print(routes)
-      print("\n")
       # 3. Shortest ASPath
       routes = self.get_shortest_as_path(routes)
-      print("Narrowed down:")
-      print(routes)
-      print("\n")
       # 4. EGP > IGP > UNK
       routes = self.get_origin_routes(routes)
-      print("Narrowed down:")
-      print(routes)
-      print("\n")
       # 5. Lowest IP Address
       last = "255.255.255.255"
       for i in range(0, len(routes)):
@@ -152,12 +138,10 @@ class Router:
         last = routes[i][NEXT]
       # Final check: enforce peering relationships
       routes = self.filter_relationships(srcif, routes)
-      print("Selected " + str(peer) + " as next step.\n\n")
     return self.sockets[self.get_dict(routes, peer, NEXT)[NEXT]] if peer else None
 
   def forward(self, srcif, packet):
     """ Forward a data packet """
-    print("Forwarding packet from " + str(srcif) + " to " + str(packet[DEST]))
     self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
     # TODO put this back in the try-except
     try:
@@ -176,17 +160,8 @@ class Router:
     """ handle update packets """
     # add entry to routing table
     # TODO change this so that it is only added if it is better than what was there before
-    print("Update: traffic to " + packet[MESG][NTWK] + " should be forwarded to " + srcif + "\nINFO:")
-    print("Netmask: " + packet[MESG][NMSK] + "\nLocalpref: " + str(packet[MESG][LPRF]) + "\nSelforigin: " + str(packet[MESG][SORG]) + \
-      "\nASPath: " + str(packet[MESG][APTH]) + "\nOrigin: " + packet[MESG][ORIG])
-    
-    print("Old routing table:")
-    print(self.routes)
     self.routes.append({DEST: packet[MESG][NTWK], NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
       SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]})
-    print("New routing table:")
-    print(self.routes)
-    print("\n")
     # store the packet in case we need it later
     self.updates.append(packet.copy())
     # create a modified copy of the packet to update neighbors
@@ -217,8 +192,8 @@ class Router:
     table_packet[MESG] = json.loads("[]")
     # for each route, add an entry to the msg field of the table packet
     for route in self.routes:
-      table_packet[MESG].append(json.loads("{\"network\" : \"" + route + "\", \"netmask\" : \"" + \
-        self.routes[route][NMSK] + "\", \"peer\" : \"" + self.routes[route][NEXT] + "\"}"))
+      table_packet[MESG].append(json.loads("{\"network\" : \"" + route[DEST] + "\", \"netmask\" : \"" + \
+        route[NMSK] + "\", \"peer\" : \"" + route[NEXT] + "\"}"))
     self.sockets[packet[SRCE]].sendall(json.dumps(table_packet).encode())
     return True
 
