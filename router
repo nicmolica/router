@@ -61,12 +61,12 @@ class Router:
     addr = daddr.split(".")
     # loop through each route in the table, dropping any that don't lead to daddr
     for i in range(0, len(self.routes)):
-      netmask = self.routes[i][NMSK].split(".")
-      split_dest = self.routes[i][DEST].split(".")
+      netmask = outroutes[i][NMSK].split(".")
+      split_dest = outroutes[i][DEST].split(".")
       # loop through each number in the IP, drop the IP if it leads somewhere other than daddr
       for i in range(0, 4):
         if netmask[i] == "255" and addr[i] != split_dest[i]:
-          outroutes.remove(self.routes[i])
+          outroutes.remove(self.routes[i].copy())
           break
     return outroutes
 
