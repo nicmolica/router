@@ -122,7 +122,7 @@ class Router:
     peer = None
     routes = self.lookup_routes(daddr)
     print("Options to choose from:")
-    print(routes)
+    print(self.routes)
     # Rules go here
     if routes:
       # 1. Highest Preference
