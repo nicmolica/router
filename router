@@ -67,6 +67,8 @@ class Router:
       for i in range(0, 4):
         if netmask[i] == "255" and addr[i] != split_dest[i]:
           print("Removing " + self.routes[i].copy()[DEST] + " because " + addr[i] + " != " + split_dest[i])
+          print("Removing: ")
+          print(self.get_dict(outroutes, self.routes[i].copy()[DEST], DEST))
           outroutes.remove(self.get_dict(outroutes, self.routes[i].copy()[DEST], DEST))
           break
     return outroutes
