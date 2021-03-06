@@ -88,6 +88,7 @@ class Router:
     """ select self originating routes """
     self_origin = True in map((lambda x: routes[x][SORG]), routes)
     if self_origin:
+      print(routes.copy())
       outroutes = dict(filter((lambda x: routes[x][SORG] == True), routes.copy()))
     else:
       outroutes = routes.copy()
