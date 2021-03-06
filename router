@@ -64,11 +64,8 @@ class Router:
       netmask = self.routes[i].copy()[NMSK].split(".")
       split_dest = self.routes[i].copy()[DEST].split(".")
       # loop through each number in the IP, drop the IP if it leads somewhere other than daddr
-      for i in range(0, 4):
-        if netmask[i] == "255" and addr[i] != split_dest[i]:
-          print("Removing " + self.routes[i].copy()[DEST] + " because " + addr[i] + " != " + split_dest[i])
-          print("Removing: ")
-          print(self.get_dict(outroutes, self.routes[i].copy()[DEST], DEST))
+      for j in range(0, 4):
+        if netmask[j] == "255" and addr[j] != split_dest[j]:
           outroutes.remove(self.get_dict(outroutes, self.routes[i].copy()[DEST], DEST))
           break
     return outroutes
