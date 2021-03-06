@@ -148,12 +148,8 @@ class Router:
     """ handle update packets """
     # add entry to routing table
     # TODO change this so that it is only added if it is better than what was there before
-    self.routes[packet[MESG][NTWK]][NEXT] = srcif
-    self.routes[packet[MESG][NTWK]][NMSK] = packet[MESG][NMSK]
-    self.routes[packet[MESG][NTWK]][LPRF] = packet[MESG][LPRF]
-    self.routes[packet[MESG][NTWK]][SORG] = packet[MESG][SORG]
-    self.routes[packet[MESG][NTWK]][APTH] = packet[MESG][APTH]
-    self.routes[packet[MESG][NTWK]][ORIG] = packet[MESG][ORIG]
+    self.routes[packet[MESG][NTWK]] = {NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: packet[MESG][LPRF], \
+      SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]}
     # store the packet in case we need it later
     self.updates[packet[MESG][NTWK]] = packet
     # create a modified copy of the packet to update neighbors
