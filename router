@@ -72,25 +72,27 @@ class Router:
 
   def get_shortest_as_path(self, routes):
     """ select the route with the shortest AS Path """
-    # TODO
-    # outroutes = []
-    # return outroutes
-    return routes
+    # find the minimum AS path length from all routes
+    min_as_path = min(map((lambda x: len(routes[x][APTH])), routes))
+    # filter out any routes with AS paths that aren't as short as the minimum
+    return dict(filter((lambda x: len(x[1][APTH]) == min_as_path), routes.copy().items()))
 
   def get_highest_preference(self, routes):
     """ select the route(s) with the highest preference """
     # pull out all the localpref values from the routing table and find the max
     max_pref = max(map((lambda x: routes[x][LPRF]), routes))
     # filter out all routes that don't have a localpref as good as the max
-    print(routes.copy().items())
     return dict(filter((lambda x: x[1][LPRF] == max_pref), routes.copy().items()))
 
   def get_self_origin(self, routes):
     """ select self originating routes """
+    # determine if any of the routes are self-originating
     self_origin = True in map((lambda x: routes[x][SORG]), routes)
     if self_origin:
+      # if there is at least one self-originating route, return all the self-originating routes
       outroutes = dict(filter((lambda x: x[1][SORG] == True), routes.copy().items()))
     else:
+      # if there are no self-originating routes, return all the routes
       outroutes = routes.copy()
     return outroutes
 
