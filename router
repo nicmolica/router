@@ -133,6 +133,7 @@ class Router:
 
   def forward(self, srcif, packet):
     """ Forward a data packet """
+    self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
     try:
       self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
     except:
