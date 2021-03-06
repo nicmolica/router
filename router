@@ -42,12 +42,12 @@ PROV = "prov"
 class Router:
   """ Your Router """
   def __init__(self, asn, networks):
-    self.routes = {}
-    self.updates = {}
+    self.routes = []
+    self.updates = []
     self.relations = {}
     self.sockets = {}
     self.asn = asn[0]
-    self.ip = IPUtils()
+    self.ip = Utils()
     for relationship in networks:
       network, relation = relationship.split("-")
       self.sockets[network] = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
@@ -60,52 +60,52 @@ class Router:
     outroutes = self.routes.copy()
     addr = daddr.split(".")
     # loop through each route in the table, dropping any that don't lead to daddr
-    for out in self.routes:
-      netmask = self.routes[out][NMSK].split(".")
-      split_out = out.split(".")
+    for i in range(0, len(self.routes)):
+      netmask = self.routes[i][NMSK].split(".")
+      split_dest = self.routes[i][DEST].split(".")
       # loop through each number in the IP, drop the IP if it leads somewhere other than daddr
       for i in range(0, 4):
-        if netmask[i] == "255" and addr[i] != split_out[i]:
-          outroutes.pop(out)
+        if netmask[i] == "255" and addr[i] != split_dest[i]:
+          outroutes.remove(self.routes[i])
           break
     return outroutes
 
   def get_shortest_as_path(self, routes):
     """ select the route with the shortest AS Path """
     # find the minimum AS path length from all routes
-    min_as_path = min(map((lambda x: len(routes[x][APTH])), routes))
+    min_as_path = min(map((lambda x: len(x[APTH])), routes))
     # filter out any routes with AS paths that aren't as short as the minimum
-    return dict(filter((lambda x: len(x[1][APTH]) == min_as_path), routes.copy().items()))
+    return list(filter((lambda x: len(x[APTH]) == min_as_path), routes.copy()))
 
   def get_highest_preference(self, routes):
     """ select the route(s) with the highest preference """
     # pull out all the localpref values from the routing table and find the max
-    max_pref = max(map((lambda x: routes[x][LPRF]), routes))
+    max_pref = max(map((lambda x: x[LPRF]), routes))
     # filter out all routes that don't have a localpref as good as the max
-    return dict(filter((lambda x: x[1][LPRF] == max_pref), routes.copy().items()))
+    return list(filter((lambda x: x[LPRF] == max_pref), routes.copy()))
 
   def get_self_origin(self, routes):
     """ select self originating routes """
     # determine if any of the routes are self-originating
-    self_origin = True in map((lambda x: routes[x][SORG]), routes)
+    self_origin = True in map((lambda x: x[SORG]), routes)
     if self_origin:
       # if there is at least one self-originating route, return all the self-originating routes
-      outroutes = dict(filter((lambda x: x[1][SORG] == True), routes.copy().items()))
+      outroutes = list(filter((lambda x: x[SORG]), routes.copy()))
     else:
       # if there are no self-originating routes, return all the routes
       outroutes = routes.copy()
     return outroutes
 
   def get_origin_routes(self, routes):
-    """ select origin routes: EGP > IGP > UNK """
+    """ select origin routes: IGP > EGP > UNK """
     # get all the origin routes
-    origin_routes = map((lambda x: routes[x][ORIG]), routes)
-    if "EGP" in origin_routes:
+    origin_routes = map((lambda x: x[ORIG]), routes)
+    if "IGP" in origin_routes:
       # if EGP routes exist, filter out all the others
-      return dict(filter((lambda x: x[1][ORIG] == "EGP"), routes.copy().items()))
-    elif "IGP" in origin_routes:
+      return list(filter((lambda x: x[ORIG] == "IGP"), routes.copy()))
+    elif "EGP" in origin_routes:
       # if no IGP routes exist but EGP routes exist, filter out all the non-EGP routes
-      return dict(filter((lambda x: x[1][ORIG] == "IGP"), routes.copy().items()))
+      return list(filter((lambda x: x[ORIG] == "EGP"), routes.copy()))
     else:
       # if no IGP or EGP routes exit, don't filter anything out
       return routes.copy()
@@ -133,12 +133,12 @@ class Router:
       routes = self.get_origin_routes(routes)
       # 5. Lowest IP Address
       last = "255.255.255.255"
-      for route in routes:
-        peer = self.ip.least(last, route)
-        last = route
+      for i in range(0, len(routes)):
+        peer = self.ip.least(last, routes[i][NEXT])
+        last = routes[i][NEXT]
       # Final check: enforce peering relationships
       routes = self.filter_relationships(srcif, routes)
-    return self.sockets[self.routes[peer][NEXT]] if peer else None
+    return self.sockets[self.get_dict(routes, peer)[NEXT]] if peer else None
 
   def forward(self, srcif, packet):
     """ Forward a data packet """
@@ -164,35 +164,34 @@ class Router:
     print("Netmask: " + packet[MESG][NMSK] + "\nLocalpref: " + str(packet[MESG][LPRF]) + "\nSelforigin: " + str(packet[MESG][SORG]) + \
       "\nASPath: " + str(packet[MESG][APTH]) + "\nOrigin: " + packet[MESG][ORIG] + "\n\n")
     # determine if a previous path to this network exists, and if so, which is better
-    previous_path_exists = packet[MESG][NTWK] in self.routes.keys()
-    new_path_is_better = True
-    if previous_path_exists:
-      print("Previous path exists. It is inferior, so updating to new path. New path:")
-      prev_path = self.routes[packet[MESG][NTWK]].copy()
-      better_localpref = packet[MESG][LPRF] > prev_path[LPRF]
-      better_selforigin = packet[MESG][SORG] and not prev_path[SORG]
-      better_aspath = len(packet[MESG][APTH]) < len(prev_path[APTH])
-      better_origin = (packet[MESG][ORIG] == "IGP" and not prev_path[ORIG] == "IGP") or \
-        (packet[MESG][ORIG] == "EGP" and not prev_path[ORIG] == "IGP" and not prev_path[ORIG] == "EGP")
-      new_path_is_better = better_localpref or better_selforigin or better_aspath or better_origin
+    # previous_path_exists = packet[MESG][NTWK] in self.routes.keys()
+    # new_path_is_better = True
+    # if previous_path_exists:
+    #   print("Previous path exists. It is inferior, so updating to new path. New path:")
+    #   prev_path = self.routes[packet[MESG][NTWK]].copy()
+    #   better_localpref = packet[MESG][LPRF] > prev_path[LPRF]
+    #   better_selforigin = packet[MESG][SORG] and not prev_path[SORG]
+    #   better_aspath = len(packet[MESG][APTH]) < len(prev_path[APTH])
+    #   better_origin = (packet[MESG][ORIG] == "IGP" and not prev_path[ORIG] == "IGP") or \
+    #     (packet[MESG][ORIG] == "EGP" and not prev_path[ORIG] == "IGP" and not prev_path[ORIG] == "EGP")
+    #   new_path_is_better = better_localpref or better_selforigin or better_aspath or better_origin
     
-    if new_path_is_better:
-      self.routes[packet[MESG][NTWK]] = {NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
-        SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]}
-      print(self.routes[packet[MESG][NTWK]])
-      # store the packet in case we need it later
-      self.updates[packet[MESG][NTWK]] = packet.copy()
-      # create a modified copy of the packet to update neighbors
-      update_packet = packet.copy()
-      # update_packet[SRCE] = packet[DEST] WRONG
-      update_packet[MESG][APTH].append(int(self.asn))
-      # update all the neighbors
-      for neighbor in self.sockets.keys():
-        if neighbor != srcif:
-          update_packet[SRCE] = self.ip.get_local_version(neighbor)
-          update_packet[DEST] = neighbor
-          self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
-      # TODO change this so that only the necessary neighbors are updated
+    #if new_path_is_better:
+    self.routes.append({"dest": packet[MESG][NTWK], NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
+      SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]})
+    # store the packet in case we need it later
+    self.updates[packet[MESG][NTWK]] = packet.copy()
+    # create a modified copy of the packet to update neighbors
+    update_packet = packet.copy()
+    # update_packet[SRCE] = packet[DEST] WRONG
+    update_packet[MESG][APTH].append(int(self.asn))
+    # update all the neighbors
+    for neighbor in self.sockets.keys():
+      if neighbor != srcif:
+        update_packet[SRCE] = self.ip.get_local_version(neighbor)
+        update_packet[DEST] = neighbor
+        self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
+    # TODO change this so that only the necessary neighbors are updated
     return True
 
   def revoke(self, packet):
@@ -255,7 +254,13 @@ class Router:
         else:
           return
 
-class IPUtils:
+  def get_dict(self, routes, ip):
+    return dict(filter((lambda x: x[DEST] == ip), routes.copy()))
+
+  def get_keys(self):
+    return list(map((lambda x: x[DEST]), self.routes.copy()))
+
+class Utils:
   def get_local_version(self, neighbor):
     """ get local IP associated with provided neighbor IP """
     local = list(neighbor)
