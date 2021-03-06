@@ -82,7 +82,7 @@ class Router:
     # pull out all the localpref values from the routing table and find the max
     max_pref = max(map((lambda x: routes[x][LPRF]), routes))
     # filter out all routes that don't have a localpref as good as the max
-    return filter((lambda x: routes[x][LPRF] == max_pref), routes.copy())
+    return list(filter((lambda x: routes[x][LPRF] == max_pref), routes.copy()))
 
   def get_self_origin(self, routes):
     """ select self originating routes """
