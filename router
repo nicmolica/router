@@ -160,24 +160,37 @@ class Router:
     """ handle update packets """
     # add entry to routing table
     # TODO change this so that it is only added if it is better than what was there before
-    print("Update: traffic to " + packet[MESG][NTWK] + " should be forwarded to " + srcif + "\nINFO:")
-    print("Netmask: " + packet[MESG][NMSK] + "\nLocalpref: " + str(packet[MESG][LPRF]) + "\nSelforigin: " + str(packet[MESG][SORG]) + \
-      "\nASPath: " + str(packet[MESG][APTH]) + "\nOrigin: " + packet[MESG][ORIG] + "\n\n")
-    self.routes[packet[MESG][NTWK]] = {NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
-      SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]}
-    # store the packet in case we need it later
-    self.updates[packet[MESG][NTWK]] = packet.copy()
-    # create a modified copy of the packet to update neighbors
-    update_packet = packet.copy()
-    # update_packet[SRCE] = packet[DEST] WRONG
-    update_packet[MESG][APTH].append(int(self.asn))
-    # update all the neighbors
-    for neighbor in self.sockets.keys():
-      if neighbor != srcif:
-        update_packet[SRCE] = self.ip.get_local_version(neighbor)
-        update_packet[DEST] = neighbor
-        self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
-    # TODO change this so that only the necessary neighbors are updated
+    #print("Update: traffic to " + packet[MESG][NTWK] + " should be forwarded to " + srcif + "\nINFO:")
+    #print("Netmask: " + packet[MESG][NMSK] + "\nLocalpref: " + str(packet[MESG][LPRF]) + "\nSelforigin: " + str(packet[MESG][SORG]) + \
+    #  "\nASPath: " + str(packet[MESG][APTH]) + "\nOrigin: " + packet[MESG][ORIG] + "\n\n")
+    # determine if a previous path to this network exists, and if so, which is better
+    previous_path_exists = packet[MESG][NTWK] in self.routes.keys()
+    new_path_is_better = True
+    if previous_path_exists:
+      prev_path = self.routes[packet[MESG][NTWK]].copy()
+      better_localpref = packet[MESG][LPRF] > prev_path[LPRF]
+      better_selforigin = packet[MESG][SORG] and not prev_path[SORG]
+      better_aspath = len(packet[MESG][APTH]) < len(prev_path[APTH])
+      better_origin = (packet[MESG][ORIG] == "IGP" and not prev_path[ORIG] == "IGP") or \
+        (packet[MESG][ORIG] == "EGP" and not prev_path[ORIG] == "IGP" and not prev_path[ORIG] == "EGP")
+      new_path_is_better = better_localpref or better_selforigin or better_aspath or better_origin
+    
+    if new_path_is_better:
+      self.routes[packet[MESG][NTWK]] = {NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
+        SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]}
+      # store the packet in case we need it later
+      self.updates[packet[MESG][NTWK]] = packet.copy()
+      # create a modified copy of the packet to update neighbors
+      update_packet = packet.copy()
+      # update_packet[SRCE] = packet[DEST] WRONG
+      update_packet[MESG][APTH].append(int(self.asn))
+      # update all the neighbors
+      for neighbor in self.sockets.keys():
+        if neighbor != srcif:
+          update_packet[SRCE] = self.ip.get_local_version(neighbor)
+          update_packet[DEST] = neighbor
+          self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
+      # TODO change this so that only the necessary neighbors are updated
     return True
 
   def revoke(self, packet):
