@@ -79,15 +79,19 @@ class Router:
 
   def get_highest_preference(self, routes):
     """ select the route(s) with the highest preference """
+    # pull out all the localpref values from the routing table and find the max
     max_pref = max(map((lambda x: routes[x][LPRF]), routes))
+    # filter out all routes that don't have a localpref as good as the max
     return filter((lambda x: routes[x][LPRF] == max_pref), routes.copy())
 
   def get_self_origin(self, routes):
     """ select self originating routes """
-    # TODO
-    # outroutes = []
-    # return outroutes
-    return routes
+    self_origin = True in map((lambda x: routes[x][SORG]), routes)
+    if self_origin:
+      outroutes = filter((lambda x: routes[x][SORG] == True), routes.copy())
+    else:
+      outroutes = routes.copy()
+    return outroutes
 
   def get_origin_routes(self, routes):
     """ select origin routes: EGP > IGP > UNK """
@@ -128,8 +132,11 @@ class Router:
 
   def forward(self, srcif, packet):
     """ Forward a data packet """
+    self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
+    # TODO put this back in the try-except
     try:
-      self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
+      # self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
+      pass
     except:
       return False
     return True
