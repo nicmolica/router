@@ -66,7 +66,7 @@ class Router:
       # loop through each number in the IP, drop the IP if it leads somewhere other than daddr
       for i in range(0, 4):
         if netmask[i] == "255" and addr[i] != split_out[i]:
-          outroutes.pop(out)
+          outroutes.pop(out.copy())
           break
     return outroutes
 
@@ -160,10 +160,11 @@ class Router:
     """ handle update packets """
     # add entry to routing table
     # TODO change this so that it is only added if it is better than what was there before
+    print("Update: traffic to " + packet[MESG][NTWK] + " should be forwarded to " + srcif)
     self.routes[packet[MESG][NTWK]] = {NEXT: srcif, NMSK: packet[MESG][NMSK], LPRF: int(packet[MESG][LPRF]), \
       SORG: packet[MESG][SORG], APTH: packet[MESG][APTH], ORIG: packet[MESG][ORIG]}
     # store the packet in case we need it later
-    self.updates[packet[MESG][NTWK]] = packet
+    self.updates[packet[MESG][NTWK]] = packet.copy()
     # create a modified copy of the packet to update neighbors
     update_packet = packet.copy()
     # update_packet[SRCE] = packet[DEST] WRONG
@@ -191,9 +192,9 @@ class Router:
     table_packet[TYPE] = "table"
     table_packet[MESG] = json.loads("[]")
     # for each route, add an entry to the msg field of the table packet
-    for entry in self.routes:
-      table_packet[MESG].append(json.loads("{\"network\" : \"" + entry + "\", \"netmask\" : \"" + \
-        self.routes[entry][NMSK] + "\", \"peer\" : \"" + self.routes[entry][NEXT] + "\"}"))
+    for route in self.routes:
+      table_packet[MESG].append(json.loads("{\"network\" : \"" + route + "\", \"netmask\" : \"" + \
+        self.routes[route][NMSK] + "\", \"peer\" : \"" + self.routes[route][NEXT] + "\"}"))
     self.sockets[packet[SRCE]].sendall(json.dumps(table_packet).encode())
     return True
 
