@@ -66,7 +66,7 @@ class Router:
       # loop through each number in the IP, drop the IP if it leads somewhere other than daddr
       for i in range(0, 4):
         if netmask[i] == "255" and addr[i] != split_out[i]:
-          outroutes.pop(out.copy())
+          outroutes.pop(out)
           break
     return outroutes
 
