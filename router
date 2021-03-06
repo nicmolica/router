@@ -98,10 +98,17 @@ class Router:
 
   def get_origin_routes(self, routes):
     """ select origin routes: EGP > IGP > UNK """
-    # TODO
-    # outroutes = []
-    # return outroutes
-    return routes
+    # get all the origin routes
+    origin_routes = map((lambda x: routes[x][ORIG]), routes)
+    if "EGP" in origin_routes:
+      # if EGP routes exist, filter out all the others
+      return dict(filter((lambda x: x[1][ORIG] == "EGP"), routes.copy().items()))
+    elif "IGP" in origin_routes:
+      # if no IGP routes exist but EGP routes exist, filter out all the non-EGP routes
+      return dict(filter((lambda x: x[1][ORIG] == "IGP"), routes.copy().items()))
+    else:
+      # if no IGP or EGP routes exit, don't filter anything out
+      return routes.copy()
 
   def filter_relationships(self, srcif, routes):
     """ Don't allow Peer->Peer, Peer->Prov, or Prov->Peer forwards """
