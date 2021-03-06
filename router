@@ -84,7 +84,7 @@ class Router:
     route_prefs = map((lambda x: routes[x][LPRF]), routes)
     max_pref = max(route_prefs)
     print("Max preference: " + str(max_pref))
-    outroutes = filter((lambda x: x[LPRF] == max_pref), routes.copy())
+    outroutes = filter((lambda x: routes[x][LPRF] == max_pref), routes.copy())
     print("Chosen routes:")
     print(outroutes)
     return outroutes
