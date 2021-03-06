@@ -122,17 +122,29 @@ class Router:
     peer = None
     routes = self.lookup_routes(daddr)
     print("Options to choose from:")
-    print(self.routes)
+    print(routes)
     # Rules go here
     if routes:
       # 1. Highest Preference
       routes = self.get_highest_preference(routes)
+      print("Narrowed down:")
+      print(routes)
+      print("\n")
       # 2. Self Origin
       routes = self.get_self_origin(routes)
+      print("Narrowed down:")
+      print(routes)
+      print("\n")
       # 3. Shortest ASPath
       routes = self.get_shortest_as_path(routes)
+      print("Narrowed down:")
+      print(routes)
+      print("\n")
       # 4. EGP > IGP > UNK
       routes = self.get_origin_routes(routes)
+      print("Narrowed down:")
+      print(routes)
+      print("\n")
       # 5. Lowest IP Address
       last = "255.255.255.255"
       for i in range(0, len(routes)):
