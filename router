@@ -83,13 +83,13 @@ class Router:
     max_pref = max(map((lambda x: routes[x][LPRF]), routes))
     # filter out all routes that don't have a localpref as good as the max
     print(routes.copy().items())
-    return dict(filter((lambda x: x[LPRF] == max_pref), routes.copy().items()))
+    return dict(filter((lambda x: x[1][LPRF] == max_pref), routes.copy().items()))
 
   def get_self_origin(self, routes):
     """ select self originating routes """
     self_origin = True in map((lambda x: routes[x][SORG]), routes)
     if self_origin:
-      outroutes = dict(filter((lambda x: x[SORG] == True), routes.copy().items()))
+      outroutes = dict(filter((lambda x: x[1][SORG] == True), routes.copy().items()))
     else:
       outroutes = routes.copy()
     return outroutes
