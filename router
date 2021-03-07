@@ -229,7 +229,7 @@ class Router:
     """ Send a no_route error message """
     no_route = msg.copy()
     no_route[TYPE] = NRTE
-    no_route[MESG] = msg[MESG]
+    no_route[MESG] = ""
     conn.sendall(json.dumps(no_route).encode())
 
   def run(self):
