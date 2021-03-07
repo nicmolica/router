@@ -192,6 +192,8 @@ class Router:
     return True
 
   def remove_from_routing_table(self, net, mask):
+    """ Remove all instances of the provided network/netmask combo from the routing table.
+    """
     self.routes = list(filter((lambda x: x[DEST] == net or x[NMSK] == mask), self.routes))
 
   def dump(self, packet):
@@ -225,10 +227,10 @@ class Router:
 
   def send_error(self, conn, msg):
     """ Send a no_route error message """
-    no_route = msg.copy()
+    no_route = json.loads(msg)
     no_route[TYPE] = NRTE
     no_route[MESG] = msg[MESG]
-    conn.sendall(no_route.encode())
+    conn.sendall(json.dumps(no_route).encode())
 
   def run(self):
     """ main loop for the router """
