@@ -44,6 +44,7 @@ class Router:
   def __init__(self, asn, networks):
     self.routes = []
     self.updates = []
+    self.revocations = []
     self.relations = {}
     self.sockets = {}
     self.asn = asn[0]
@@ -179,8 +180,20 @@ class Router:
 
   def revoke(self, packet):
     """ handle revoke packets """
-    # TODO
+    self.revocations.append(packet.copy())
+    for revocation in packet[MESG]:
+      self.remove_from_routing_table(revocation[NTWK], revocation[NMSK])
+
+    revoke_packet = packet.copy()
+    for neighbor in self.sockets.keys():
+      if neighbor != packet[SRCE]:
+        revoke_packet[SRCE] = self.ip.get_local_version(neighbor)
+        revoke_packet[DEST] = neighbor
+        self.sockets[neighbor].sendall(json.dumps(revoke_packet).encode())
     return True
+
+  def remove_from_routing_table(self, net, mask):
+    self.routes = list(filter((lambda x: x[DEST] == net or x[NMSK] == mask), self.routes))
 
   def dump(self, packet):
     """ handles dump table requests """
@@ -202,7 +215,7 @@ class Router:
     if packet[TYPE] == UPDT:
       return self.update(srcif, packet)
     elif packet[TYPE] == RVKE:
-      return False
+      return self.revoke(packet)
     elif packet[TYPE] == DATA:
       return self.forward(srcif, packet)
     elif packet[TYPE] == NRTE:
