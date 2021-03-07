@@ -143,11 +143,11 @@ class Router:
 
   def forward(self, srcif, packet):
     """ Forward a data packet """
-    self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
+    # self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
     # TODO put this back in the try-except
     try:
-      # self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
-      pass
+      self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
+      print("no route\n")
     except:
       return False
     return True
@@ -227,8 +227,7 @@ class Router:
   def send_error(self, conn, msg):
     """ Send a no_route error message """
     print("ERROR!!!\n\n")
-    # TODO
-    return
+    print(conn)
 
   def run(self):
     """ main loop for the router """
