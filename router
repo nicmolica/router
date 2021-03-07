@@ -169,7 +169,10 @@ class Router:
     update_packet[MESG][APTH].append(int(self.asn))
     # update all the neighbors
     for neighbor in self.sockets.keys():
-      if neighbor != srcif:
+      is_from_customer = self.relations[srcif] == CUST
+      is_to_customer = self.relations[neighbor] == CUST
+      neighbor_is_not_sender = neighbor != srcif
+      if neighbor_is_not_sender and (is_from_customer or is_to_customer):
         update_packet[SRCE] = self.ip.get_local_version(neighbor)
         update_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
@@ -184,7 +187,10 @@ class Router:
 
     revoke_packet = packet.copy()
     for neighbor in self.sockets.keys():
-      if neighbor != packet[SRCE]:
+      is_from_customer = self.relations[packet[SRCE]] == CUST
+      is_to_customer = self.relations[neighbor] == CUST
+      neighbor_is_not_sender = neighbor != packet[SRCE]
+      if neighbor_is_not_sender and (is_from_customer or is_to_customer):
         revoke_packet[SRCE] = self.ip.get_local_version(neighbor)
         revoke_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(revoke_packet).encode())
