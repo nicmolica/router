@@ -195,7 +195,7 @@ class Router:
   def remove_from_routing_table(self, net, mask):
     """ Remove all instances of the provided network/netmask combo from the routing table.
     """
-    self.routes = list(filter((lambda x: x[DEST] == net and x[NMSK] == mask), self.routes))
+    self.routes = list(filter((lambda x: not x[DEST] == net or not x[NMSK] == mask), self.routes))
 
   def dump(self, packet):
     """ handles dump table requests """
