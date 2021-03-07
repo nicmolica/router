@@ -136,7 +136,15 @@ class Router:
         peer = self.ip.least(last, routes[i][NEXT])
         last = routes[i][NEXT]
       # Final check: enforce peering relationships
+      print("Routes before filtering by relationship:")
+      for r in routes:
+        print("Relationship: " + self.relations[r[NEXT]])
+        print(r)
       routes = self.filter_relationships(srcif, routes)
+      print("\n\nRoutes after filtering by relationship:")
+      for r in routes:
+        print("Relationship: " + self.relations[r[NEXT]])
+        print(r)
       route = self.get_dict(routes, peer, NEXT)
     return self.sockets[route[NEXT]] if peer and route != None else None
 
