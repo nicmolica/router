@@ -113,9 +113,7 @@ class Router:
 
   def filter_relationships(self, srcif, routes):
     """ Don't allow Peer->Peer, Peer->Prov, or Prov->Peer forwards """
-    # outroutes = []
-    # return outroutes
-    return routes
+    return list(filter((lambda x: self.relations[srcif] == CUST or x[DEST] == CUST), routes.copy()))
 
   def get_route(self, srcif, daddr):
     """ Select the best route for a given address """
@@ -176,7 +174,6 @@ class Router:
         update_packet[SRCE] = self.ip.get_local_version(neighbor)
         update_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
-    # TODO change this so that only the necessary neighbors are updated
     return True
 
   def revoke(self, packet):
