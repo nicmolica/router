@@ -254,7 +254,7 @@ class Router:
               srcif = sock
           msg = json.loads(k)
           if not self.handle_packet(srcif, msg):
-            self.send_error(srcif, msg)
+            self.send_error(conn, msg)
         else:
           return
 
