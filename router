@@ -183,10 +183,12 @@ class Router:
     for revocation in packet[MESG]:
       print("Revoking: " + revocation[NTWK] + ", " + revocation[NMSK])
       print("Initial table:")
-      print(self.routes)
+      for route in self.routes:
+        print(route)
       print("\nFinal table:")
       self.remove_from_routing_table(revocation[NTWK], revocation[NMSK])
-      print(self.routes)
+      for route in self.routes:
+        print(route)
 
     revoke_packet = packet.copy()
     for neighbor in self.sockets.keys():
