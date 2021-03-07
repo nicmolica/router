@@ -186,7 +186,7 @@ class Router:
       for route in self.routes:
         print(route)
       print("\nFinal table:")
-      self.remove_from_routing_table(revocation[NTWK], revocation[NMSK])
+      self.remove_from_routing_table(revocation[NTWK], packet[SRCE], revocation[NMSK])
       for route in self.routes:
         print(route)
 
@@ -198,10 +198,10 @@ class Router:
         self.sockets[neighbor].sendall(json.dumps(revoke_packet).encode())
     return True
 
-  def remove_from_routing_table(self, net, mask):
+  def remove_from_routing_table(self, net, src, mask):
     """ Remove all instances of the provided network/netmask combo from the routing table.
     """
-    self.routes = list(filter((lambda x: x[DEST] != net or x[NMSK] != mask), self.routes))
+    self.routes = list(filter((lambda x: x[DEST] != net or x[NMSK] != mask or x[SRCE] != src), self.routes))
 
   def dump(self, packet):
     """ handles dump table requests """
