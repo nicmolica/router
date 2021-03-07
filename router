@@ -231,7 +231,7 @@ class Router:
     no_route[TYPE] = NRTE
     no_route[SRCE] = msg[DEST]
     no_route[DEST] = msg[SRCE]
-    no_route[MESG] = ""
+    no_route[MESG] = json.loads("[]")
     conn.sendall(json.dumps(no_route).encode())
 
   def run(self):
