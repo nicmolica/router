@@ -147,7 +147,6 @@ class Router:
     # TODO put this back in the try-except
     try:
       self.get_route(srcif, packet[DEST]).sendall(json.dumps(packet).encode())
-      print("no route\n")
     except:
       return False
     return True
@@ -227,7 +226,7 @@ class Router:
   def send_error(self, conn, msg):
     """ Send a no_route error message """
     print("ERROR!!!\n\n")
-    print(conn)
+    print(msg)
 
   def run(self):
     """ main loop for the router """
