@@ -141,10 +141,11 @@ class Router:
         print("Relationship: " + self.relations[r[NEXT]])
         print(r)
       routes = self.filter_relationships(srcif, routes)
-      print("\n\nRoutes after filtering by relationship:")
+      print("Routes after filtering by relationship:")
       for r in routes:
         print("Relationship: " + self.relations[r[NEXT]])
         print(r)
+        print("\n\n")
       route = self.get_dict(routes, peer, NEXT)
     return self.sockets[route[NEXT]] if peer and route != None else None
 
