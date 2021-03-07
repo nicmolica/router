@@ -227,7 +227,7 @@ class Router:
 
   def send_error(self, conn, msg):
     """ Send a no_route error message """
-    no_route = json.loads(msg)
+    no_route = msg.copy()
     no_route[TYPE] = NRTE
     no_route[MESG] = msg[MESG]
     conn.sendall(json.dumps(no_route).encode())
