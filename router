@@ -145,7 +145,6 @@ class Router:
     """ Forward a data packet """
     route = self.get_route(srcif, packet[DEST])
     if route == None:
-      print("No route! Sending no route message.")
       return False
     else:
       route.sendall(json.dumps(packet).encode())
@@ -209,9 +208,6 @@ class Router:
       table_packet[MESG].append(json.loads("{\"network\" : \"" + route[DEST] + "\", \"netmask\" : \"" + \
         route[NMSK] + "\", \"peer\" : \"" + route[NEXT] + "\"}"))
     self.sockets[packet[SRCE]].sendall(json.dumps(table_packet).encode())
-    print("Final routing table:")
-    print(table_packet)
-    print("\n\n")
     return True
 
   def handle_packet(self, srcif, packet):
@@ -235,7 +231,6 @@ class Router:
     no_route[SRCE] = msg[DEST]
     no_route[DEST] = msg[SRCE]
     no_route[MESG] = json.loads("{}")
-    print("No route from " + msg[SRCE] + " to " + msg[DEST])
     conn.sendall(json.dumps(no_route).encode())
 
   def run(self):
