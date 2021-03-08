@@ -410,6 +410,7 @@ class Utils:
       return split_this[0] == split_that[0] and split_this[1] == split_that[1] and \
         split_this[2] == split_that[2] and abs(int(split_this[3]) - int(split_this[3])) == 1
     elif self.subnet_to_cidr(this_mask) > 16:
+      print("DIFF OF ONE:")
       print(abs(int(split_this[2]) - int(split_this[2])) == 1)
       return split_this[0] == split_that[0] and split_this[1] == split_that[1] and \
         abs(int(split_this[2]) - int(split_this[2])) == 1 and split_this[3] == split_that[3]
