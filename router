@@ -211,7 +211,14 @@ class Router:
         update_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
 
+    print("Table before merging:")
+    for route in self.routes:
+      print(route)
     self.coalesce()
+    print("Table after merging:")
+    for route in self.routes:
+      print(route)
+    print("\n\n")
     return True
 
   def revoke(self, packet):
