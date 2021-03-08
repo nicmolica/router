@@ -219,6 +219,7 @@ class Router:
     self.revocations.append(packet.copy())
     for revocation in packet[MESG]:
       self.decoalesce(revocation)
+    for revocation in packet[MESG]:
       self.remove_from_routing_table(revocation[NTWK], packet[SRCE], revocation[NMSK])
 
     revoke_packet = packet.copy()
