@@ -256,6 +256,7 @@ class Router:
           self.ip.are_adjacent(self.routes[i][DEST], revocation[NTWK], \
             self.ip.cidr_to_subnet(self.ip.subnet_to_cidr(self.routes[i][NMSK]) + 1), revocation[NMSK]):
           self.routes.pop(i)
+          i = i + 1
       # add both old ones back in
       for j in range(0, len(self.aggregations)):
         if (self.aggregations[j][0][DEST] == revocation[NTWK] and self.aggregations[j][0][NMSK] == revocation[NMSK]) or \
