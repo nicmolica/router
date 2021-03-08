@@ -218,17 +218,9 @@ class Router:
   def revoke(self, packet):
     """ handle revoke packets """
     self.revocations.append(packet.copy())
-    print("Before decoalescing:")
-    for route in self.routes:
-      print(route)
     for revocation in packet[MESG]:
       self.decoalesce(revocation)
-    for revocation in packet[MESG]:
       self.remove_from_routing_table(revocation[NTWK], packet[SRCE], revocation[NMSK])
-    print("After decoalescing:")
-    for route in self.routes:
-      print(route)
-    print("\n\n")
 
     revoke_packet = packet.copy()
     for neighbor in self.sockets.keys():
@@ -244,12 +236,10 @@ class Router:
   def decoalesce(self, revocation):
     """ decoalesce an entry in the routing table if possible/necessary """
     if self.can_be_decoalesced(revocation[NTWK], revocation[NMSK]):
-      print("Decoalescing " + revocation[NTWK] + ", " + revocation[NMSK])
       # remove the coalesced one
       for route in self.routes:
         # if routes are the same or they are adjacent
-        if (route[DEST] == revocation[NTWK] and \
-          self.ip.subnet_to_cidr(route[NMSK]) + 1 == self.ip.subnet_to_cidr(revocation[NMSK])) or \
+        if (route[DEST] == revocation[NTWK] and self.ip.subnet_to_cidr(route[NMSK]) + 1 == self.ip.subnet_to_cidr(revocation[NMSK])) or \
           self.ip.are_adjacent(route[DEST], revocation[NTWK], \
             self.ip.cidr_to_subnet(self.ip.subnet_to_cidr(route[NMSK]) + 1), revocation[NMSK]):
           self.routes.remove(route)
