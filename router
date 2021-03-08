@@ -165,8 +165,22 @@ class Router:
 
   def merge(self, route1, route2):
     """ merge the two routes into a single entry and store the old routes """
+    # add a tuple containing the two old routes to the aggregations list
     self.aggregations.append((route1.copy(), route2.copy()))
-    
+    # find the lowest of the two IPs
+    least = self.ip.least(route1[DEST], route2[DEST])
+    first_is_least = least == route1[DEST]
+    # depending which is the least, decrement 1 from its cidr and remove the other from routes
+    if first_is_least:
+      self.routes = filter((lambda x: x != route2), self.routes.copy())
+      for i in len(self.routes):
+        if self.routes[i] == route1:
+          self.routes[i][NMSK] = self.ip.cidr_to_subnet(self.ip.subnet_to_cidr(route1[NMSK]) - 1)
+    else:
+      self.routes = filter((lambda x: x != route1), self.routes.copy())
+      for i in len(self.routes):
+        if self.routes[i] == route2:
+          self.routes[i][NMSK] = self.ip.cidr_to_subnet(self.ip.subnet_to_cidr(route2[NMSK]) - 1)
 
   def can_be_coalesced(self, route1, route2):
     """ determine if the two routes can be coalesced into a single route """
@@ -196,6 +210,8 @@ class Router:
         update_packet[SRCE] = self.ip.get_local_version(neighbor)
         update_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
+
+    self.coalesce()
     return True
 
   def revoke(self, packet):
