@@ -73,6 +73,7 @@ class Router:
     return outroutes
 
   def get_longest_prefix(self, routes):
+    """ filter out routes that don't have the longest prefix match length """
     # find the max prefix length from all routes
     longest_prefix = max(map((lambda x: self.ip.subnet_to_cidr(x[NMSK])), routes))
     # filter out all routes that aren't as good as the one with the max prefix
@@ -217,8 +218,15 @@ class Router:
   def revoke(self, packet):
     """ handle revoke packets """
     self.revocations.append(packet.copy())
+    print("Before decoalescing:")
+    for route in self.routes:
+      print(route)
     for revocation in packet[MESG]:
       self.decoalesce(revocation)
+    print("After decoalescing:")
+    for route in self.routes:
+      print(route)
+    print("\n\n")
     for revocation in packet[MESG]:
       self.remove_from_routing_table(revocation[NTWK], packet[SRCE], revocation[NMSK])
 
@@ -257,8 +265,7 @@ class Router:
       (x[1][DEST] == network and x[1][NMSK] == netmask)), self.aggregations.copy())
 
   def remove_from_routing_table(self, net, src, mask):
-    """ Remove all instances of the provided network/netmask combo from the routing table.
-    """
+    """ Remove all instances of the provided network/netmask combo from the routing table. """
     self.routes = list(filter((lambda x: x[DEST] != net or x[NMSK] != mask or x[NEXT] != src), self.routes))
 
   def dump(self, packet):
@@ -320,16 +327,14 @@ class Router:
           return
 
   def get_dict(self, routes, ip, key):
-    """ Return the first element in the routes provided which has a key that matches ip.
-    """
+    """ Return the first element in the routes provided which has a key that matches ip. """
     for route in routes:
       if route[key] == ip:
         return route
     return None
 
   def get_keys(self):
-    """ Get the DEST keys associated with the routing table.
-    """
+    """ Get the DEST keys associated with the routing table. """
     return list(map((lambda x: x[DEST]), self.routes.copy()))
 
 class Utils:
