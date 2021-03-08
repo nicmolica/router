@@ -223,12 +223,12 @@ class Router:
       print(route)
     for revocation in packet[MESG]:
       self.decoalesce(revocation)
+    for revocation in packet[MESG]:
+      self.remove_from_routing_table(revocation[NTWK], packet[SRCE], revocation[NMSK])
     print("After decoalescing:")
     for route in self.routes:
       print(route)
     print("\n\n")
-    for revocation in packet[MESG]:
-      self.remove_from_routing_table(revocation[NTWK], packet[SRCE], revocation[NMSK])
 
     revoke_packet = packet.copy()
     for neighbor in self.sockets.keys():
