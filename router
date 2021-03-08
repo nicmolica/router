@@ -241,7 +241,10 @@ class Router:
     """ Send a no_route error message """
     no_route = msg.copy()
     no_route[TYPE] = NRTE
-    no_route[SRCE] = msg[DEST]
+    for sock in self.sockets:
+      if self.sockets[sock] == conn:
+        dest = sock
+    no_route[SRCE] = dest
     no_route[DEST] = srcif
     no_route[MESG] = json.loads("{}")
     conn.sendall(json.dumps(no_route).encode())
