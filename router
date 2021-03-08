@@ -69,7 +69,12 @@ class Router:
         if netmask[j] == "255" and addr[j] != split_dest[j]:
           outroutes.remove(self.get_dict(outroutes, self.routes[i].copy()[DEST], DEST))
           break
+    outroutes = self.get_longest_prefix_routes(outroutes)
     return outroutes
+
+  def get_longest_prefix_routes(self, routes):
+    longest_prefix = max(map((lambda x: self.ip.subnet_to_cidr(x[NMSK])), routes))
+    return list(filter((lambda x: self.ip.subnet_to_cidr(x[NMSK]) == longest_prefix), routes.copy()))
 
   def get_shortest_as_path(self, routes):
     """ select the route with the shortest AS Path """
