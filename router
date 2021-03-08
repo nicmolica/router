@@ -237,12 +237,12 @@ class Router:
       return self.dump(packet)
     return False
 
-  def send_error(self, conn, msg):
+  def send_error(self, conn, msg, srcif):
     """ Send a no_route error message """
     no_route = msg.copy()
     no_route[TYPE] = NRTE
     no_route[SRCE] = msg[DEST]
-    no_route[DEST] = msg[SRCE]
+    no_route[DEST] = srcif
     no_route[MESG] = json.loads("{}")
     conn.sendall(json.dumps(no_route).encode())
 
@@ -262,7 +262,7 @@ class Router:
               srcif = sock
           msg = json.loads(k)
           if not self.handle_packet(srcif, msg):
-            self.send_error(conn, msg)
+            self.send_error(conn, msg, srcif)
         else:
           return
 
