@@ -137,6 +137,7 @@ class Router:
         last = routes[i][NEXT]
       # Final check: enforce peering relationships
       print("Source " + srcif + " relationship: " + self.relations[srcif])
+      print("Dest: " + daddr)
       print("Routes before filtering by relationship:")
       for r in routes:
         print("Destination relationship: " + self.relations[r[NEXT]])
