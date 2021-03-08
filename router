@@ -406,13 +406,13 @@ class Utils:
       return False
     split_this = this.split(".")
     split_that = that.split(".")
-    if self.subnet_to_cidr(this_mask) > 24:
+    if self.subnet_to_cidr(this_mask) >= 24:
       return split_this[0] == split_that[0] and split_this[1] == split_that[1] and \
         split_this[2] == split_that[2] and abs(int(split_this[3]) - int(split_this[3])) == 1
-    elif self.subnet_to_cidr(this_mask) > 16:
+    elif self.subnet_to_cidr(this_mask) >= 16:
       return split_this[0] == split_that[0] and split_this[1] == split_that[1] and \
         abs(int(split_this[2]) - int(split_this[2])) == 1 and split_this[3] == split_that[3]
-    elif self.subnet_to_cidr(this_mask) > 8:
+    elif self.subnet_to_cidr(this_mask) >= 8:
       return split_this[0] == split_that[0] and abs(int(split_this[1]) - int(split_this[1])) == 1 and \
         split_this[2] == split_that[2] and split_this[3] == split_that[3]
     else:
