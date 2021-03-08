@@ -45,6 +45,7 @@ class Router:
     self.routes = []
     self.updates = []
     self.revocations = []
+    self.aggregations = []
     self.relations = {}
     self.sockets = {}
     self.asn = asn[0]
@@ -69,11 +70,12 @@ class Router:
         if netmask[j] == "255" and addr[j] != split_dest[j]:
           outroutes.remove(self.get_dict(outroutes, self.routes[i].copy()[DEST], DEST))
           break
-    outroutes = self.get_longest_prefix_routes(outroutes)
     return outroutes
 
-  def get_longest_prefix_routes(self, routes):
+  def get_longest_prefix(self, routes):
+    # find the max prefix length from all routes
     longest_prefix = max(map((lambda x: self.ip.subnet_to_cidr(x[NMSK])), routes))
+    # filter out all routes that aren't as good as the one with the max prefix
     return list(filter((lambda x: self.ip.subnet_to_cidr(x[NMSK]) == longest_prefix), routes.copy()))
 
   def get_shortest_as_path(self, routes):
@@ -122,9 +124,9 @@ class Router:
 
   def get_route(self, srcif, daddr):
     """ Select the best route for a given address """
-    # TODO
     peer = None
     routes = self.lookup_routes(daddr)
+    routes = self.get_longest_prefix(routes)
     # Rules go here
     if routes:
       # 1. Highest Preference
@@ -156,8 +158,23 @@ class Router:
 
   def coalesce(self):
     """ coalesce any routes that are right next to each other """
-    # TODO (this is the most difficult task, save until last)
-    return False
+    for first, second in zip(self.routes.copy(), self.routes.copy()[1:]):
+      if self.can_be_coalesced(first, second):
+        self.merge(first, second)
+    return True
+
+  def merge(self, route1, route2):
+    """ merge the two routes into a single entry and store the old routes """
+    self.aggregations.append((route1.copy(), route2.copy()))
+    
+
+  def can_be_coalesced(self, route1, route2):
+    """ determine if the two routes can be coalesced into a single route """
+    are_adjacent = self.ip.are_adjacent(route1[DEST], route2[DEST], route1[NMSK], route2[NMSK])
+    same_forward = route1[NEXT] == route2[NEXT]
+    same_attributes = route1[LPRF] == route2[LPRF] and route1[SORG] == route2[SORG] and \
+      route1[APTH] == route2[APTH] and route1[ORIG] == route2[ORIG]
+    return are_adjacent and same_forward and same_attributes
 
   def update(self, srcif, packet):
     """ handle update packets """
@@ -293,6 +310,31 @@ class Utils:
           cidr = cidr + 1
     return cidr
 
+  def cidr_to_subnet(self, cidr):
+    """ convert cidr to subnet """
+    subnet = ""
+    for i in range(0, 32):
+      if i < cidr:
+        subnet = subnet + "1"
+      else:
+        subnet = subnet + "0"
+    bins = [subnet[0:8], subnet[8:16], subnet[16:24], subnet[24:32]]
+    decs = list(map(self.binary_to_decimal, bins))
+    subnet = decs[0] + "." + decs[1] + "." + decs[2] + "." + decs[3]
+    return subnet
+    
+  def binary_to_decimal(self, binary):
+    """ convert binary numbers to decimals """
+    bin_int = int(binary)
+    decimal = 0
+    i = 0
+    while bin_int != 0:
+        dec = bin_int % 10
+        decimal = decimal + dec * pow(2, i) 
+        bin_int = bin_int // 10
+        i = i + 1
+    return str(decimal)
+
   def least(self, this, that):
     """ return the lower of two IP addresses """
     split_this = this.split(".")
@@ -304,6 +346,25 @@ class Utils:
         else:
           return this
     return this
+
+  def are_adjacent(self, this, that, this_mask, that_mask):
+    """ determine if two IP addresses are numerically adjacent """
+    if this_mask != that_mask:
+      return False
+    split_this = this.split(".")
+    split_that = that.split(".")
+    if self.subnet_to_cidr(this_mask) > 24:
+      return split_this[0] == split_that[0] and split_this[1] == split_that[1] and \
+        split_this[2] == split_that[2] and abs(int(split_this[3]) - int(split_this[3])) == 1
+    elif self.subnet_to_cidr(this_mask) > 16:
+      return split_this[0] == split_that[0] and split_this[1] == split_that[1] and \
+        abs(int(split_this[2]) - int(split_this[2])) == 1 and split_this[3] == split_that[3]
+    elif self.subnet_to_cidr(this_mask) > 8:
+      return split_this[0] == split_that[0] and abs(int(split_this[1]) - int(split_this[1])) == 1 and \
+        split_this[2] == split_that[2] and split_this[3] == split_that[3]
+    else:
+      return abs(int(split_this[0]) - int(split_this[0])) == 1 and split_this[1] == split_that[1] and \
+        split_this[2] == split_that[2] and split_this[3] == split_that[3]
 
 if __name__ == "__main__":
   PARSER = argparse.ArgumentParser(description='route packets')
