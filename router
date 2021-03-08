@@ -172,12 +172,12 @@ class Router:
     first_is_least = least == route1[DEST]
     # depending which is the least, decrement 1 from its cidr and remove the other from routes
     if first_is_least:
-      self.routes = filter((lambda x: x != route2), self.routes.copy())
+      self.routes = list(filter((lambda x: x != route2), self.routes.copy()))
       for i in range(0, len(self.routes)):
         if self.routes[i] == route1:
           self.routes[i][NMSK] = self.ip.cidr_to_subnet(self.ip.subnet_to_cidr(route1[NMSK]) - 1)
     else:
-      self.routes = filter((lambda x: x != route1), self.routes.copy())
+      self.routes = list(filter((lambda x: x != route1), self.routes.copy()))
       for i in range(0, len(self.routes)):
         if self.routes[i] == route2:
           self.routes[i][NMSK] = self.ip.cidr_to_subnet(self.ip.subnet_to_cidr(route2[NMSK]) - 1)
