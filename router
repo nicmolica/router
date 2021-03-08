@@ -185,15 +185,9 @@ class Router:
   def can_be_coalesced(self, route1, route2):
     """ determine if the two routes can be coalesced into a single route """
     are_adjacent = self.ip.are_adjacent(route1[DEST], route2[DEST], route1[NMSK], route2[NMSK])
-    print("Are adjacent: ")
-    print(are_adjacent)
     same_forward = route1[NEXT] == route2[NEXT]
-    print("Same forward: ")
-    print(same_forward)
     same_attributes = route1[LPRF] == route2[LPRF] and route1[SORG] == route2[SORG] and \
       route1[APTH] == route2[APTH] and route1[ORIG] == route2[ORIG]
-    print("Same attributes: ")
-    print(same_attributes)
     return are_adjacent and same_forward and same_attributes
 
   def update(self, srcif, packet):
@@ -217,14 +211,7 @@ class Router:
         update_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(update_packet).encode())
 
-    print("Table before merging:")
-    for route in self.routes:
-      print(route)
     self.coalesce()
-    print("Table after merging:")
-    for route in self.routes:
-      print(route)
-    print("\n\n")
     return True
 
   def revoke(self, packet):
@@ -408,15 +395,15 @@ class Utils:
     split_that = that.split(".")
     if self.subnet_to_cidr(this_mask) > 24:
       return split_this[0] == split_that[0] and split_this[1] == split_that[1] and \
-        split_this[2] == split_that[2] and abs(int(split_this[3]) - int(split_that[3])) <= 2
+        split_this[2] == split_that[2] and abs(int(split_this[3]) - int(split_that[3])) <= 255
     elif self.subnet_to_cidr(this_mask) > 16:
       return split_this[0] == split_that[0] and split_this[1] == split_that[1] and \
-        abs(int(split_this[2]) - int(split_that[2])) <= 2 and split_this[3] == split_that[3]
+        abs(int(split_this[2]) - int(split_that[2])) <= 255 and split_this[3] == split_that[3]
     elif self.subnet_to_cidr(this_mask) > 8:
-      return split_this[0] == split_that[0] and abs(int(split_this[1]) - int(split_that[1])) <= 2 and \
+      return split_this[0] == split_that[0] and abs(int(split_this[1]) - int(split_that[1])) <= 255 and \
         split_this[2] == split_that[2] and split_this[3] == split_that[3]
     else:
-      return abs(int(split_this[0]) - int(split_that[0])) <= 2 and split_this[1] == split_that[1] and \
+      return abs(int(split_this[0]) - int(split_that[0])) <= 255 and split_this[1] == split_that[1] and \
         split_this[2] == split_that[2] and split_this[3] == split_that[3]
 
 if __name__ == "__main__":
