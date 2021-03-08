@@ -249,14 +249,13 @@ class Router:
     """ decoalesce an entry in the routing table if possible/necessary """
     if self.can_be_decoalesced(revocation[NTWK], revocation[NMSK]):
       # remove the coalesced one
-      for i in range(0, len(self.routes)):
+      for route in self.routes:
         # if routes are the same or they are adjacent
-        if (self.routes[i][DEST] == revocation[NTWK] and \
-          self.ip.subnet_to_cidr(self.routes[i][NMSK]) + 1 == self.ip.subnet_to_cidr(revocation[NMSK])) or \
-          self.ip.are_adjacent(self.routes[i][DEST], revocation[NTWK], \
-            self.ip.cidr_to_subnet(self.ip.subnet_to_cidr(self.routes[i][NMSK]) + 1), revocation[NMSK]):
-          self.routes.pop(i)
-          i = i + 1
+        if (route[DEST] == revocation[NTWK] and \
+          self.ip.subnet_to_cidr(route[NMSK]) + 1 == self.ip.subnet_to_cidr(revocation[NMSK])) or \
+          self.ip.are_adjacent(route[DEST], revocation[NTWK], \
+            self.ip.cidr_to_subnet(self.ip.subnet_to_cidr(route[NMSK]) + 1), revocation[NMSK]):
+          self.routes.remove(route)
       # add both old ones back in
       for j in range(0, len(self.aggregations)):
         if (self.aggregations[j][0][DEST] == revocation[NTWK] and self.aggregations[j][0][NMSK] == revocation[NMSK]) or \
