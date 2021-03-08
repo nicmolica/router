@@ -218,6 +218,7 @@ class Router:
     """ handle revoke packets """
     self.revocations.append(packet.copy())
     for revocation in packet[MESG]:
+      self.decoalesce(revocation)
       self.remove_from_routing_table(revocation[NTWK], packet[SRCE], revocation[NMSK])
 
     revoke_packet = packet.copy()
@@ -230,6 +231,29 @@ class Router:
         revoke_packet[DEST] = neighbor
         self.sockets[neighbor].sendall(json.dumps(revoke_packet).encode())
     return True
+
+  def decoalesce(self, revocation):
+    """ decoalesce an entry in the routing table if possible/necessary """
+    if self.can_be_decoalesced(revocation[NTWK], revocation[NMSK]):
+      # remove the coalesced one
+      for i in range(0, len(self.routes)):
+        # if routes are the same or they are adjacent
+        if (self.routes[i][DEST] == revocation[NTWK] and \
+          self.ip.subnet_to_cidr(self.routes[i][NMSK]) + 1 == self.ip.subnet_to_cidr(revocation[NMSK])) or \
+          self.ip.are_adjacent(self.routes[i][DEST], revocation[NTWK], \
+            self.ip.cidr_to_subnet(self.ip.subnet_to_cidr(self.routes[i][NMSK]) + 1), revocation[NMSK]):
+          self.routes.pop(i)
+      # add both old ones back in
+      for j in range(0, len(self.aggregations)):
+        if (self.aggregations[j][0][DEST] == revocation[NTWK] and self.aggregations[j][0][NMSK] == revocation[NMSK]) or \
+          (self.aggregations[j][1][DEST] == revocation[NTWK] and self.aggregations[j][1][NMSK] == revocation[NMSK]):
+          self.routes.append(self.aggregations[j][0])
+          self.routes.append(self.aggregations[j][1])
+
+  def can_be_decoalesced(self, network, netmask):
+    """ is the provided network/netmask combo in the list of previous aggregations """
+    return True in map((lambda x: (x[0][DEST] == network and x[0][NMSK] == netmask) or \
+      (x[1][DEST] == network and x[1][NMSK] == netmask)), self.aggregations.copy())
 
   def remove_from_routing_table(self, net, src, mask):
     """ Remove all instances of the provided network/netmask combo from the routing table.
