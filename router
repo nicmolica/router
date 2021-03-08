@@ -243,7 +243,7 @@ class Router:
     no_route = msg.copy()
     no_route[TYPE] = NRTE
     no_route[SRCE] = self.ip.get_local_version(srcif)
-    no_route[SRCE] = srcif
+    no_route[DEST] = srcif
     no_route[MESG] = json.loads("{}")
     conn.sendall(json.dumps(no_route).encode())
 
