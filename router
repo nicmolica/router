@@ -408,15 +408,15 @@ class Utils:
     split_that = that.split(".")
     if self.subnet_to_cidr(this_mask) > 24:
       return split_this[0] == split_that[0] and split_this[1] == split_that[1] and \
-        split_this[2] == split_that[2] and abs(int(split_this[3]) - int(split_that[3])) == 1
+        split_this[2] == split_that[2] and abs(int(split_this[3]) - int(split_that[3])) <= 2
     elif self.subnet_to_cidr(this_mask) > 16:
       return split_this[0] == split_that[0] and split_this[1] == split_that[1] and \
-        abs(int(split_this[2]) - int(split_that[2])) == 1 and split_this[3] == split_that[3]
+        abs(int(split_this[2]) - int(split_that[2])) <= 2 and split_this[3] == split_that[3]
     elif self.subnet_to_cidr(this_mask) > 8:
-      return split_this[0] == split_that[0] and abs(int(split_this[1]) - int(split_that[1])) == 1 and \
+      return split_this[0] == split_that[0] and abs(int(split_this[1]) - int(split_that[1])) <= 2 and \
         split_this[2] == split_that[2] and split_this[3] == split_that[3]
     else:
-      return abs(int(split_this[0]) - int(split_that[0])) == 1 and split_this[1] == split_that[1] and \
+      return abs(int(split_this[0]) - int(split_that[0])) <= 2 and split_this[1] == split_that[1] and \
         split_this[2] == split_that[2] and split_this[3] == split_that[3]
 
 if __name__ == "__main__":
