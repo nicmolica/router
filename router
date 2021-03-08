@@ -185,9 +185,15 @@ class Router:
   def can_be_coalesced(self, route1, route2):
     """ determine if the two routes can be coalesced into a single route """
     are_adjacent = self.ip.are_adjacent(route1[DEST], route2[DEST], route1[NMSK], route2[NMSK])
+    print("Are adjacent: ")
+    print(are_adjacent)
     same_forward = route1[NEXT] == route2[NEXT]
+    print("Same forward: ")
+    print(same_forward)
     same_attributes = route1[LPRF] == route2[LPRF] and route1[SORG] == route2[SORG] and \
       route1[APTH] == route2[APTH] and route1[ORIG] == route2[ORIG]
+    print("Same attributes: ")
+    print(same_attributes)
     return are_adjacent and same_forward and same_attributes
 
   def update(self, srcif, packet):
