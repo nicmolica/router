@@ -244,6 +244,7 @@ class Router:
   def decoalesce(self, revocation):
     """ decoalesce an entry in the routing table if possible/necessary """
     if self.can_be_decoalesced(revocation[NTWK], revocation[NMSK]):
+      print("Decoalescing " + revocation[NTWK] + ", " + revocation[NMSK])
       # remove the coalesced one
       for route in self.routes:
         # if routes are the same or they are adjacent
