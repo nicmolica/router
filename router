@@ -284,14 +284,13 @@ class Utils:
   def subnet_to_cidr(self, subnet):
     """ convert subnet mask to cidr """
     nums = subnet.split(".")
-    bins = [bin(nums[0]), bin(nums[1]), bin(nums[2]), bin(nums[3])]
+    bins = [bin(int(nums[0])), bin(int(nums[1])), bin(int(nums[2])), bin(int(nums[3]))]
     cidr = 0
     for num in bins:
-      binary = list(num)
+      binary = list(str(num))
       for i in range(2, len(binary)):
         if binary[i] == "1":
           cidr = cidr + 1
-    # TODO delete this method if it's not useful
     return cidr
 
   def least(self, this, that):
