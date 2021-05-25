@@ -1,15 +1,10 @@
-# Project 3 Milestone
-### Basic Approach
-For this project, I used the approach laid out in the "Implementing Your Router" section of the project description, completing the first 4 steps. After studying the test config files and reviewing the starter code, this involved writing logic to handle `update`, `data`, and `dump` messages from servers.
+Nicholas Molica (nicmolica), March 2021
 
-For `update` packets, I modified the routing table (internally represented as a dictionary) to include the new route. I then sent my own `update` messages to all adjacent servers except the one that initially sent me the `update` message.
+# Router Control System Implementation
+This is a from-scratch implementation of the control system for a router. It is meant to function exactly the same as an actual router does, but in a simulated environment. The control system takes care of routing packets, maintaining a forwarding table (including coalescing and decoalescing entries), filtering out invalid requests, and all the other functions a router would normally perform.
 
-For `data` packets, I simply forwarded the recieved packet to the correct server.
+## Technology Used
+This project is implemented in Python and uses the `json` and `socket` modules, as well as other general purpose modules. No routing logic modules are used, as the purpose of this project was to practice writing the algorithms necesary for industry-quality routing from scratch. Unfortunately, I'm no longer able to run the simulator because I lost access to it after March, but if asked, I can provide a code walkthrough.
 
-For `dump` packets, I modified the `dump` packet to become a `table` packet instead, and then sent the modified packet to the server that requested it.
-
-### Challenges
-The main challenges I encountered were related to IP address manipulation. It was frustrating to have to constantly think about how I needed to modify IP addresses in each function, so I eventually opted to make an `IPUtils` class that contained a number of utility functions for manipulating IP addresses. This ended up being extremely helpful. It currently includes 3 methods, only 2 of which are in use, but it will be expanded significantly for the final product.
-
-### Testing
-I performed all of my testing using the provided simulator. Because the simulator only outputs messages about *what* is incorrect rather than *how* it is incorrect, I opted to add numerous print statements throughout my code for debugging purposes. This helped me to see exactly what my code was doing and why this was causing my program to crash or the simulator to reject input.
+## Development Process
+In order to make the code in this project easy to understand, I wrote it in an object oriented style. The factory design pattern is very prominent in the code, as the process of deciding which forwarding route to use involves many filtering steps. I felt that this would be easiest to do using the factory pattern, whittling down the possibilities until there was only one left. Because this was such an extensive project, I also wanted to approach development with an organized approach. I started by mapping out the order in which I would design the functionality, to avoid the pitfalls of either trying to do too much at once, or writing code that was only testable in integration. To remedy this, I organized the route filtering into several key pieces of functionality, and implemented them one at a time. Apart than this filtering algorithm, the rest of the project was trivially simple and involved simple socket functionality and if-else logic.
